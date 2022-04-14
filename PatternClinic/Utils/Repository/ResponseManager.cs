@@ -179,8 +179,34 @@ namespace PatternClinic.Utils.Repository
             public string refreshToken { get; set; }
             public string tokenType { get; set; }
         }
+        public class APIResult
+        {
+            public string result { get; set; }
+        }
 
+        public class DoctorsResponse
+        {
+            public string Designation { get; set; }
+            public string UserName { get; set; }
+            public string ProfileImage { get; set; }
+            public string SK { get; set; }
+        }
 
+        public class LoginResponse
+        {
+            public string ProfilePic { get; set; }
+            public string UserName { get; set; }
+       
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+            public string Email { get; set; }
+        public string Country { get; set; }
+        public string Height { get; set; }
+         public string Weight { get; set; }
+
+            public string SK { get; set; }
+     
+        }
         public class UserMaster
         { 
             public string SK { get; set; }
@@ -189,38 +215,23 @@ namespace PatternClinic.Utils.Repository
             public string Password { get; set; }
             public string Weight { get; set; }
             public string Height { get; set; }
+            public string ProfilePic { get; set; }
+            public string Email { get; set; }
+            public string Country { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+
+           
         }
 
 
 
-        //public class PatientInfo
-        //{
-        //    public string PatientId { get; set; }
-        //    public string UserName { get; set; }
-        //    public string Email { get; set; }
-        //    public string FirstName { get; set; }
-        //    public string LastName { get; set; }
-        //    public string Zip { get; set; }
-        //    public string City { get; set; }
-        //    public string ActiveStatus { get; set; }
-        //    public string Street { get; set; }
-        //    public string Height { get; set; }
-        //    public string CarecoordinatorName { get; set; }
-        //    public string Gender { get; set; }
-        //    public string Notes { get; set; }
-        //    public string DOB { get; set; }
-
-        //    public string ContactNo { get; set; }
-        //    public string Lang { get; set; }
-        //    public string WorkPone { get; set; }
-        //    public string MobilePhone { get; set; }
-        //}
-
+       
 
         public class PatientResult
         {
             public string AuthToken { get; set; }
-            public List<PatientInfo> patientInfo { get; set; }
+            public LoginResponse patientInfo { get; set; }
             public int Response { get; set; }
             public string ErrorMessage { get; set; }
             public PatientResult(ResponseCode responseCode = ResponseCode.OK, string errorMessage = null)
@@ -236,7 +247,23 @@ namespace PatternClinic.Utils.Repository
         }
 
 
+        public class DoctorResult
+        {
+            public string AuthToken { get; set; }
+            public List<DoctorsResponse> doctorInfo { get; set; }
+            public int Response { get; set; }
+            public string ErrorMessage { get; set; }
+            public DoctorResult(ResponseCode responseCode = ResponseCode.OK, string errorMessage = null)
+            {
+                Response = (int)responseCode;
+                if (errorMessage == null)
+                {
+                    errorMessage = (int)responseCode < ErrorMessages.Length ? ErrorMessages[(int)responseCode] : $"Response Code {responseCode}";
+                }
 
+                ErrorMessage = errorMessage;
+            }
+        }
 
 
         // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
@@ -255,33 +282,78 @@ namespace PatternClinic.Utils.Repository
             public string S { get; set; }
         }
 
-        public class ExpressionAttributeValues
+        public class ExpressionAttributeValues_GetInfo
         {
             [JsonProperty(":v_PK")]
-            public VPK VPK { get; set; }
-
-            //[JsonProperty(":v_SK")]
-            //public VSK VSK { get; set; }
+            public VPK VPK { get; set; }           
 
             [JsonProperty(":v_email")]
             public Email Email { get; set; }
-
-            [JsonProperty(":v_Height")]
-            public Height Height { get; set; }
+            
         }
 
-        public class UpdateExpression
+
+
+        #region Updated Fields
+        public class UpdatedEmail
         { 
-        
+        public string s { get; set; }
         }
+        public class UpdatedFirstName
+        {
+            public string s { get; set; }
+        }
+        public class UpdatedLastName
+        {
+            public string s { get; set; }
+        }
+        public class UpdatedCountry
+        {
+            public string s { get; set; }
+        }
+        public class ExpressionAttributeValues
+        {
+            [JsonProperty(":v_Height")]
+            public UpdatedHeight Height { get; set; }
 
-      
-      
-        public class Key
-        {         
-            public PK PK { get; set; }
-            public SK SK { get; set; }
+            [JsonProperty(":v_Weight")]
+            public UpdatedWeight Weight { get; set; }
+
+            [JsonProperty(":v_Email")]
+            public UpdatedEmail Email { get; set; }
+
+            [JsonProperty(":v_FirstName")]
+            public UpdatedFirstName FirstName { get; set; }
+
+            [JsonProperty(":v_LastName")]
+            public UpdatedLastName LastName { get; set; }
+
+            [JsonProperty(":v_Country")]
+            public UpdatedCountry Country { get; set; }
+
+            [JsonProperty(":v_ProfileImage")]
+            public ProfileImage ProfileImage { get; set; }
         }
+        public class UpdatedWeight
+        { 
+         public string s { get; set; }
+        }
+        public class Key
+        {
+            public UpdatePK PK { get; set; }
+            public UpdateSK SK { get; set; }
+        }
+        #endregion Updated Fields
+
+        public class ResetPasswordRequest
+        { 
+        public string newpassword { get; set; }
+            public string username { get; set; }
+        
+            public string AuthToken { get; set; }
+            public string confirmationcode { get; set; }
+        }
+      
 
         public class FilterExpression
         {
@@ -294,9 +366,17 @@ namespace PatternClinic.Utils.Repository
             public string TableName { get; set; }
             public string ProjectionExpression { get; set; }
             public string KeyConditionExpression { get; set; }
-            public ExpressionAttributeValues ExpressionAttributeValues { get; set; }
+            public ExpressionAttributeValues_GetInfo ExpressionAttributeValues { get; set; }
         }
 
+
+        public class UpdateRoot
+        {
+            public string TableName { get; set; }
+            public string ProjectionExpression { get; set; }
+            public string KeyConditionExpression { get; set; }
+            public ExpressionAttributeValues ExpressionAttributeValues { get; set; }
+        }
 
 
         // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
@@ -389,6 +469,18 @@ namespace PatternClinic.Utils.Repository
             public List<object> ss { get; set; }
         }
 
+
+        public class UpdatePK
+        {
+
+            public string s { get; set; }
+        }
+
+        public class UpdateSK
+        {
+            public string s { get; set; }
+
+        }
         public class PK
         {
             public object b { get; set; }
@@ -494,7 +586,10 @@ namespace PatternClinic.Utils.Repository
         }
 
 
-     
+        public class UpdatedHeight
+        { 
+        public string s { get; set; }
+        }
         public class Weight
         {
             public object b { get; set; }
@@ -767,8 +862,20 @@ namespace PatternClinic.Utils.Repository
             public List<object> ss { get; set; }
         }
 
-        public class PatientInfo
+        public class ProfileImage
+        { 
+        public string s { get; set; }
+        }
+
+
+        public class ExpressionAttributeValues_GetdoctorInfo
+        {            
+            [JsonProperty(":v_PK")]
+            public VPK VPK { get; set; }
+        }
+        public class UserInfo
         {
+            public ProfileImage profileImage { get; set; }
             public UserId UserId { get; set; }
             public ActiveStatus ActiveStatus { get; set; }
             public DOB DOB { get; set; }
@@ -796,8 +903,15 @@ namespace PatternClinic.Utils.Repository
             public BMI BMI { get; set; }
             public Diastolic diastolic { get; set; }
             public Systolic systolic { get; set; }
+
+            public Country country { get; set; }
         }
 
+        public class Country
+        {
+            public string S { get; set; }
+
+        }
 
         #endregion
     }

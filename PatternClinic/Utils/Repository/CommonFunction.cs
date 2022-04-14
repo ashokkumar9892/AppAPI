@@ -19,7 +19,7 @@ namespace PatternClinic.Utils.Repository
         string GenerateNewPassword(int lowercase, int uppercase, int numerics, int SpecialCharacter);
         //string Convert_StringvalueToHexvalue(string stringvalue, System.Text.Encoding encoding);
         string GetToken(int length, Random random);
-
+       
         string Convert_StringvalueToHexvalue(string stringvalue, System.Text.Encoding encoding);
         string Convert_HexvalueToStringvalue(string hexvalue, System.Text.Encoding encoding);
     }
@@ -31,6 +31,16 @@ namespace PatternClinic.Utils.Repository
         public string baseurl()
         {
             return "http://petjet.harishparas.com/";
+        }
+
+        public static string dynamodburl()
+        {
+            return "https://rpmcrudapis20210808220332demo.azurewebsites.net/api/";
+        }
+
+        public static string apidynamodburl()
+        {
+            return "https://appapi.apatternplus.com/api/DynamoDbAPIs/";
         }
         public string GeneratePasswordSaltedHashString(string input)
         {
@@ -143,11 +153,11 @@ namespace PatternClinic.Utils.Repository
                     Password = password
                 };
 
-                var requestBody = new HttpRequestMessage(HttpMethod.Post, "https://rpmcrudapis20210808220332demo.azurewebsites.net/api/signin")
+                var requestBody = new HttpRequestMessage(HttpMethod.Post,  dynamodburl() +"signin")
                 {
                     Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
                 };
-                var response = await SendPost("https://rpmcrudapis20210808220332demo.azurewebsites.net/api/signin", requestBody);
+                var response = await SendPost(dynamodburl() +"signin", requestBody);
 
                 return response;
          
@@ -178,7 +188,7 @@ namespace PatternClinic.Utils.Repository
                     TableName = "UserDetailsDemo",
                     ProjectionExpression = "PK,SK,UserId",
                     KeyConditionExpression = "PK = :v_PK AND begins_with(SK, :v_SK)",
-                    ExpressionAttributeValues = new ExpressionAttributeValues()
+                    ExpressionAttributeValues = new ExpressionAttributeValues_GetInfo()
                     {
                         VPK = new VPK()
                         {
@@ -195,7 +205,7 @@ namespace PatternClinic.Utils.Repository
                 var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AuthToken);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = await client.PostAsync("https://rpmcrudapis20210808220332demo.azurewebsites.net/api/DynamoDbAPIs/getitem", content);
+                var response = await client.PostAsync(dynamodburl()+ "DynamoDbAPIs/getitem", content);
                 return response;
             }
         }
@@ -211,7 +221,7 @@ namespace PatternClinic.Utils.Repository
                     ProjectionExpression = "PK,SK,UserId,UserName,Email,ContactNo,DOB,DoctorName,CarecoordinatorName,Coach,Height,reading,diastolic,systolic,weight,BMI,FirstName,LastName,Gender,Lang,Street,City,Zip,WorkPhone,MobilePhone,ActiveStatus, Notes",
                     KeyConditionExpression = "PK = :v_PK",
                     FilterExpression = "Email = :v_email",
-                    ExpressionAttributeValues = new ExpressionAttributeValues()
+                    ExpressionAttributeValues = new ExpressionAttributeValues_GetInfo()
                     {
                         VPK = new VPK()
                         {
@@ -219,7 +229,8 @@ namespace PatternClinic.Utils.Repository
                         },                        
                          Email = new Email()
                          {
-                             S = "jaypal@mailinator.com"
+                             S = "ashokapex@gmail.com"
+                             //  S = req.UserName
                          }
                     }
 
@@ -230,7 +241,7 @@ namespace PatternClinic.Utils.Repository
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var response = await client.PostAsync("https://rpmcrudapis20210808220332demo.azurewebsites.net/api/DynamoDbAPIs/getitem", content);
+                var response = await client.PostAsync(dynamodburl()+ "DynamoDbAPIs/getitem", content);
 
                 return response;
             }
@@ -245,15 +256,39 @@ namespace PatternClinic.Utils.Repository
                     TableName = "UserDetailsDemo",
                     Key = new Key()
                     {
-                        PK = new PK { s = "patient" },
-                        SK = new SK { s = req.SK }
-                    },                 
-                    UpdateExpression = "SET Height = :v_Height",
+                        PK = new UpdatePK { s = "patient" },
+                        SK = new UpdateSK { s = req.SK }
+                    },
+                    UpdateExpression = "SET Height = :v_Height, Weight = :v_Weight, FirstName = :v_FirstName, LastName = :v_LastName, Country = :v_Country, Email = :v_Email. ProfileImage = :v_ProfileImage",
                     ExpressionAttributeValues = new ExpressionAttributeValues()
-                    {
-                        Height = new Height()
+                    {                        
+                        Height = new UpdatedHeight()
                         {
                             s = req.Height
+                        },
+                        Weight = new UpdatedWeight()
+                        {
+                            s = req.Weight
+                        },
+                        FirstName = new UpdatedFirstName()
+                        {
+                            s = req.FirstName
+                        },
+                        LastName = new UpdatedLastName()
+                        {
+                           s = req.LastName
+                        },
+                        Country = new UpdatedCountry()
+                        {
+                            s = req.Country
+                        },
+                        Email = new UpdatedEmail()
+                        {
+                            s = req.Email
+                        },
+                        ProfileImage = new ProfileImage()
+                        { 
+                            s = req.ProfilePic
                         }
                     }
                 };
@@ -263,7 +298,112 @@ namespace PatternClinic.Utils.Repository
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var response = await client.PostAsync("https://appapi.apatternplus.com/api/DynamoDbAPIs/updateitem", content);
+                var response = await client.PostAsync(apidynamodburl() +"updateitem", content);
+
+                return response;
+            }
+        }
+
+        public static async Task<HttpResponseMessage> ForgotPatientPassword(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+                   Username = req.UserName
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "forgotpassword", content);
+
+                return response;
+            }
+        }
+
+        public static async Task<HttpResponseMessage> ResetPatientPassword(ResetPasswordRequest req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+                    Username = req.username,
+                    NewPassword = req.newpassword,
+                    ConfirmationCode = req.confirmationcode
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "confirmforgotpassword", content);
+
+                return response;
+            }
+        }
+
+        public static async Task<HttpResponseMessage> GetDoctorsList(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+
+                    TableName = "UserDetailsDemo",
+                    ProjectionExpression = "PK,SK,UserId,UserName,LastName,ActiveStatus, Notes,ProfileImage",
+                    KeyConditionExpression = "PK = :v_PK",
+                  
+                    ExpressionAttributeValues = new ExpressionAttributeValues_GetdoctorInfo()
+                    {
+                        VPK = new VPK()
+                        {
+                            S = "doctor"
+                        }
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "DynamoDbAPIs/getitem", content);
+
+                return response;
+            }
+        }
+
+
+        public static async Task<HttpResponseMessage> GetCoachList(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+
+                    TableName = "UserDetailsDemo",
+                    ProjectionExpression = "PK,SK,UserId,UserName,LastName,ActiveStatus, Notes,ProfileImage",
+                    KeyConditionExpression = "PK = :v_PK",
+
+                    ExpressionAttributeValues = new ExpressionAttributeValues_GetdoctorInfo()
+                    {
+                        VPK = new VPK()
+                        {
+                            S = "coach"
+                        }
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "DynamoDbAPIs/getitem", content);
 
                 return response;
             }
