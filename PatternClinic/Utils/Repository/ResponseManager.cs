@@ -196,17 +196,21 @@ namespace PatternClinic.Utils.Repository
         {
             public string ProfilePic { get; set; }
             public string UserName { get; set; }
-       
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
             public string Email { get; set; }
-        public string Country { get; set; }
-        public string Height { get; set; }
-         public string Weight { get; set; }
+            public string Country { get; set; }
+            public string Height { get; set; }
+            public string Weight { get; set; }
 
             public string SK { get; set; }
-     
-        }
+
+            public string Gender { get; set; }
+            public string DOB { get; set; }
+            public string ReferAs { get; set;  }
+
+    }
         public class UserMaster
         { 
             public string SK { get; set; }
@@ -221,7 +225,17 @@ namespace PatternClinic.Utils.Repository
             public string FirstName { get; set; }
             public string LastName { get; set; }
 
-           
+            public string DoctorName { get; set; }
+            public string DoctorId { get; set; }
+            public string CoachName { get; set; }
+
+            public string GSI1SK { get; set; }
+            public string CoachId { get; set; }
+
+            public string ReferAs { get; set; }
+            public string Gender { get; set; }
+            public string DOB { get; set; }
+                   
         }
 
 
@@ -292,7 +306,18 @@ namespace PatternClinic.Utils.Repository
             
         }
 
+        public class ExpressionAttributeValues_UpdateTeam
+        {
+            [JsonProperty(":v_DoctorId")]  public DoctorId DoctorId { get; set; }
+            [JsonProperty(":v_DoctorName")]  public DoctorName DoctorName { get; set; }
+            [JsonProperty(":v_Coach")]  public Coach Coach { get; set; }
+            [JsonProperty(":v_GSI1SK")]  public GSI1SK GSI1SK { get; set; }
+            [JsonProperty(":v_CoachId")]  public CoachId CoachId { get; set; }
+        }
 
+        public class DoctorId  { public string S { get; set; }  }
+        public class GSI1SK { public string S { get; set; } }
+        public class CoachId { public string S { get; set; } }
 
         #region Updated Fields
         public class UpdatedEmail
@@ -333,6 +358,28 @@ namespace PatternClinic.Utils.Repository
 
             [JsonProperty(":v_ProfileImage")]
             public ProfileImage ProfileImage { get; set; }
+
+            [JsonProperty(":v_DOB")]
+            public UpdatedDOB DOB { get; set; }
+            [JsonProperty(":v_Gender")]
+            public UpdatedGender Gender { get; set; }
+            [JsonProperty(":v_ReferAs")]
+            public ReferAs ReferAs { get; set; }
+        }
+
+        public class ReferAs
+        { 
+        public string S { get; set; }
+        }
+
+        public class UpdatedGender
+        {
+            public string S { get; set; }
+        }
+
+        public class UpdatedDOB
+        {
+            public string S { get; set; }
         }
         public class UpdatedWeight
         { 
@@ -904,6 +951,7 @@ namespace PatternClinic.Utils.Repository
             public Diastolic diastolic { get; set; }
             public Systolic systolic { get; set; }
 
+            public ReferAs ReferAs { get; set; }
             public Country country { get; set; }
         }
 

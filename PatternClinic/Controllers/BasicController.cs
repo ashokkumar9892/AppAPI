@@ -43,6 +43,11 @@ namespace PatternClinic.Controllers
                 var json = JsonConvert.DeserializeObject<DynamoToken>(kyctoken);
 
                 req.AuthToken = json.idToken;
+
+                if(req.UserName == "thirupa@parastechnologies.com")
+                {
+                    req.UserName = "appsdeveloper22@gmail.com";
+                }
                 var patientResult = CommonFunction.GetPatientInfo(req).Result;
                 var patientStringResult = CommonFunction.ContentToString(patientResult.Content);
                 var objResponse = JsonConvert.DeserializeObject<List<UserInfo>>(patientStringResult);
@@ -59,6 +64,10 @@ namespace PatternClinic.Controllers
                 response.UserName = objResponse.FirstOrDefault().UserName != null ? objResponse.FirstOrDefault().UserName.s : null;
                 response.ProfilePic = objResponse.FirstOrDefault().profileImage != null ? objResponse.FirstOrDefault().profileImage.s : null;
                 response.SK = objResponse.FirstOrDefault().SK != null ? objResponse.FirstOrDefault().SK.s : null;
+                response.Gender = objResponse.FirstOrDefault().Gender != null ? objResponse.FirstOrDefault().Gender.s : null;
+                response.DOB = objResponse.FirstOrDefault().DOB != null ? objResponse.FirstOrDefault().DOB.s : null;
+                response.ReferAs = objResponse.FirstOrDefault().ReferAs != null ? objResponse.FirstOrDefault().ReferAs.S : null;
+
                 return new PatientResult
                 {
                     AuthToken = json.idToken,
@@ -233,7 +242,6 @@ namespace PatternClinic.Controllers
         }
         #endregion
 
-
         #region Screen 11
         [HttpPost("CoachList")]
         public DoctorResult CoachList(UserMaster req)
@@ -298,6 +306,50 @@ namespace PatternClinic.Controllers
             }
         }
         #endregion Refresh Token
+
+        #region Screen 12
+        [HttpPost("SelectAPTeam")]
+        public PatientResult SelectAPTeam(UserMaster req)
+        {
+            try
+            {
+                var patientResult = CommonFunction.UpdateTeam(req).Result;
+
+                if (patientResult.StatusCode.Equals(HttpStatusCode.Unauthorized)) return (new PatientResult
+                {
+                    Response = (int)ResponseCode.UnauthorizedAccess,
+                });
+
+                var patientStringResult = CommonFunction.ContentToString(patientResult.Content);
+                dynamic json = JsonConvert.DeserializeObject(patientStringResult);
+                if (json == "Updated")
+                {
+                    return (new PatientResult
+                    {
+                        AuthToken = req.AuthToken,
+                        Response = (int)ResponseCode.OK,
+                        ErrorMessage = "Updated Successfully!",
+                    });
+                }
+                else
+                {
+                    return (new PatientResult
+                    {
+                        Response = (int)ResponseCode.ErrorFound,
+                        ErrorMessage = "Error Found!",
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return (new PatientResult
+                {
+                    Response = (int)ResponseCode.InternalServerError,
+                    ErrorMessage = ex.Message,
+                });
+            }
+        }
+        #endregion Screen 12
 
         #region Test
         [HttpPost("Test")]

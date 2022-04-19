@@ -218,7 +218,7 @@ namespace PatternClinic.Utils.Repository
                 {
 
                     TableName = "UserDetailsDemo",
-                    ProjectionExpression = "PK,SK,UserId,UserName,Email,ContactNo,DOB,DoctorName,CarecoordinatorName,Coach,Height,reading,diastolic,systolic,weight,BMI,FirstName,LastName,Gender,Lang,Street,City,Zip,WorkPhone,MobilePhone,ActiveStatus, Notes",
+                    ProjectionExpression = "PK,SK,UserId,UserName,Email,ContactNo,DOB,DoctorName,CarecoordinatorName,Coach,Height,reading,diastolic,systolic,weight,BMI,FirstName,LastName,Gender,Lang,Street,City,Zip,WorkPhone,MobilePhone,ActiveStatus,Notes,ProfileImage",
                     KeyConditionExpression = "PK = :v_PK",
                     FilterExpression = "Email = :v_email",
                     ExpressionAttributeValues = new ExpressionAttributeValues_GetInfo()
@@ -228,9 +228,8 @@ namespace PatternClinic.Utils.Repository
                             S = "patient"
                         },                        
                          Email = new Email()
-                         {
-                             S = "ashokapex@gmail.com"
-                             //  S = req.UserName
+                         {                            
+                               S = req.UserName 
                          }
                     }
 
@@ -259,7 +258,7 @@ namespace PatternClinic.Utils.Repository
                         PK = new UpdatePK { s = "patient" },
                         SK = new UpdateSK { s = req.SK }
                     },
-                    UpdateExpression = "SET Height = :v_Height, Weight = :v_Weight, FirstName = :v_FirstName, LastName = :v_LastName, Country = :v_Country, Email = :v_Email. ProfileImage = :v_ProfileImage",
+                    UpdateExpression = "SET Height = :v_Height, Weight = :v_Weight, FirstName = :v_FirstName, LastName = :v_LastName, Country = :v_Country, Email = :v_Email, ProfileImage = :v_ProfileImage, Gender = :v_Gender, DOB = :v_DOB, ReferAs = :v_ReferAs",
                     ExpressionAttributeValues = new ExpressionAttributeValues()
                     {                        
                         Height = new UpdatedHeight()
@@ -289,7 +288,19 @@ namespace PatternClinic.Utils.Repository
                         ProfileImage = new ProfileImage()
                         { 
                             s = req.ProfilePic
-                        }
+                        },
+                         DOB = new UpdatedDOB()
+                         {
+                            S = req.DOB
+                         },
+                          Gender = new UpdatedGender()
+                          {
+                              S = req.Gender
+                          },
+                           ReferAs = new ReferAs()
+                           {
+                               S = req.ReferAs
+                           }
                     }
                 };
 
@@ -304,6 +315,53 @@ namespace PatternClinic.Utils.Repository
             }
         }
 
+
+        public static async Task<HttpResponseMessage> UpdateTeam(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+                    TableName = "UserDetailsDemo",
+                    Key = new Key()
+                    {
+                        PK = new UpdatePK { s = "patient" },
+                        SK = new UpdateSK { s = req.SK }
+                    },
+                    UpdateExpression = "SET DoctorId = :v_DoctorId, DoctorName = :v_DoctorName, Coach = :v_Coach, CoachId = :v_CoachId, GSI1SK = :v_GSI1SK",
+                    ExpressionAttributeValues = new ExpressionAttributeValues_UpdateTeam()
+                    {
+                        DoctorId = new DoctorId()
+                        {
+                           S  = req.DoctorId
+                        },
+                        DoctorName = new DoctorName()
+                        {
+                            s = req.DoctorName
+                        },
+                        Coach = new Coach()
+                        {
+                            s = req.CoachName
+                        },
+                        CoachId = new CoachId()
+                        {
+                            S = req.CoachId
+                        },
+                        GSI1SK = new GSI1SK()
+                        {
+                            S = req.DoctorId
+                        }
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await client.PostAsync(apidynamodburl() + "updateitem", content);
+
+                return response;
+            }
+        }
         public static async Task<HttpResponseMessage> ForgotPatientPassword(UserMaster req)
         {
             using (HttpClient client = new HttpClient())
@@ -376,7 +434,6 @@ namespace PatternClinic.Utils.Repository
                 return response;
             }
         }
-
 
         public static async Task<HttpResponseMessage> GetCoachList(UserMaster req)
         {
