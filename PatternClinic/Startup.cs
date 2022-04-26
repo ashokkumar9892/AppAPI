@@ -1,3 +1,4 @@
+using PatternClinic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using PatternClinic.Hubs;
 
 namespace PatternClinic
 {
@@ -44,9 +46,18 @@ namespace PatternClinic
                     Description = "ASP.NET Core 3.1 Web API"
                 });
             });
-
+            services.AddSignalR();
             services.AddScoped<ICommonFunction, CommonFunction>();           
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        .SetIsOriginAllowed((host) => true)
+                        .AllowAnyHeader());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,10 +69,11 @@ namespace PatternClinic
             }
 
             app.UseHttpsRedirection();
-
+          
             app.UseRouting();
-
+            app.UseCors("CorsPolicy");
             app.UseAuthorization();
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -70,6 +82,7 @@ namespace PatternClinic
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chatHub");
             });
         }
     }

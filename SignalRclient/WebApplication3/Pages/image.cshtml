@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="~/js/microsoft/signalr/dist/browser/signalr.js"></script>
+  
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:51160/chatHub").build();
+            const id = urlParams.get("senderid");
+            connection.start().then(function () {
+                console.log("connected 123");
+                document.getElementById("sendButton").disabled = false;
+                connection.invoke('getConnectionId', id)
+                    .then(function (connectionId) {
+                        sessionStorage.setItem('conectionId', connectionId);
+                    });
+            });
+
+
+
+            // Multiple images preview in browser
+            alert(123);
+
+            var imagesPreview = function (input, placeToInsertImagePreview) {
+
+                if (input.files) {
+
+                    var filesAmount = input.files.length;
+                    connection.invoke('SendImages', input.files);
+              
+
+
+                    for (i = 0; i < filesAmount; i++) {
+                        var reader = new FileReader();
+
+                        //reader.onload = function (event) {
+                        //    $($.parseHTML('<img>')).attr('src', event.target.result).appendTo(placeToInsertImagePreview);
+                        //}
+                        //reader.readAsDataURL(input.files[i]);
+                    }
+                }
+            };
+            $('#gallery-photo-add').on('change', function () {
+                imagesPreview(this, 'div.gallery');
+            });
+        });
+    </script>
+</head>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  
+    <input type="file" multiple id="gallery-photo-add">
+    <div class="gallery"></div>
+</body>
+</html>

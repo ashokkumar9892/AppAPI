@@ -43,8 +43,9 @@ namespace PatternClinic.Controllers
                 var json = JsonConvert.DeserializeObject<DynamoToken>(kyctoken);
 
                 req.AuthToken = json.idToken;
-
-                if(req.UserName == "thirupa@parastechnologies.com")
+                LoginResponse response = new LoginResponse();
+                response.UserName = req.UserName;
+                if (req.UserName == "thirupa@parastechnologies.com")
                 {
                     req.UserName = "appsdeveloper22@gmail.com";
                 }
@@ -53,7 +54,7 @@ namespace PatternClinic.Controllers
                 var objResponse = JsonConvert.DeserializeObject<List<UserInfo>>(patientStringResult);
                 if (objResponse.Count == 0) return new PatientResult(ResponseCode.ErrorFound, "No User Found");
 
-                LoginResponse response = new LoginResponse();
+              
 
                 response.Country = objResponse.FirstOrDefault().country != null ? objResponse.FirstOrDefault().country.S : null;
                 response.Email = objResponse.FirstOrDefault().Email.S;
@@ -61,12 +62,14 @@ namespace PatternClinic.Controllers
                 response.Height = objResponse.FirstOrDefault().Height != null ? objResponse.FirstOrDefault().Height.s: null;
                 response.LastName = objResponse.FirstOrDefault().LastName != null ? objResponse.FirstOrDefault().LastName.s : null;
                 response.Weight = objResponse.FirstOrDefault().weight != null ? objResponse.FirstOrDefault().weight.s : null;
-                response.UserName = objResponse.FirstOrDefault().UserName != null ? objResponse.FirstOrDefault().UserName.s : null;
+              
                 response.ProfilePic = objResponse.FirstOrDefault().profileImage != null ? objResponse.FirstOrDefault().profileImage.s : null;
                 response.SK = objResponse.FirstOrDefault().SK != null ? objResponse.FirstOrDefault().SK.s : null;
                 response.Gender = objResponse.FirstOrDefault().Gender != null ? objResponse.FirstOrDefault().Gender.s : null;
                 response.DOB = objResponse.FirstOrDefault().DOB != null ? objResponse.FirstOrDefault().DOB.s : null;
                 response.ReferAs = objResponse.FirstOrDefault().ReferAs != null ? objResponse.FirstOrDefault().ReferAs.S : null;
+                response.WeightUnit = objResponse.FirstOrDefault().weightUnit != null ? objResponse.FirstOrDefault().weightUnit.S : null;
+
 
                 return new PatientResult
                 {
@@ -167,10 +170,8 @@ namespace PatternClinic.Controllers
         public PatientResult UpdateProfile(UserMaster req)
         {
             try
-            {
-               
+            {               
                 var patientResult = CommonFunction.UpdatePatientInfo(req).Result;
-
                 if (patientResult.StatusCode.Equals(HttpStatusCode.Unauthorized)) return  (new PatientResult
                 {
                     Response = (int)ResponseCode.UnauthorizedAccess,
@@ -178,22 +179,23 @@ namespace PatternClinic.Controllers
 
                 var patientStringResult = CommonFunction.ContentToString(patientResult.Content);                
                 dynamic json = JsonConvert.DeserializeObject(patientStringResult);
-                if (json == "Updated")
-                {
-                    return (new PatientResult
-                    {
-                        AuthToken = req.AuthToken,
-                        Response = (int)ResponseCode.OK,
-                        ErrorMessage = "Updated Successfully!",
-                    });
-                }
-                else {
-                    return (new PatientResult
-                    {                      
-                        Response = (int)ResponseCode.ErrorFound,
-                        ErrorMessage = "Error Found!",
-                    });
-                }
+                if (json != "Updated") return (new PatientResult { Response = (int)ResponseCode.ErrorFound, ErrorMessage = "Error Found!" });
+
+                // Update Email In Pool
+                    req.UserName = req.UserName;
+                    req.Email = req.Email;
+                    var emailResult = CommonFunction.UpdateEmailinPool(req).Result;
+                    var emailStringResult = CommonFunction.ContentToString(emailResult.Content);
+                    dynamic emailjson = JsonConvert.DeserializeObject(emailStringResult);
+
+                    if (emailjson != "Updated") return (new PatientResult  { Response = (int)ResponseCode.ErrorFound,  ErrorMessage = "Error Found!"});
+                   
+                        return (new PatientResult
+                        {
+                            AuthToken = req.AuthToken,
+                            Response = (int)ResponseCode.OK,
+                            ErrorMessage = "Updated Successfully!",
+                        });
             }
             catch (Exception ex)
             {

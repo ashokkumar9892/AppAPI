@@ -18,8 +18,21 @@ namespace PatternClinic.Utils.Repository
 
         }
 
+        public class chatdata
+        {
+            public string IsLast { get; set; }
+            public string PK { get; set; }
+            public string SK { get; set; }
+            public string CreatedOn { get; set; }
+            public string SenderSK { get; set; }
+            public string ReceiverSK { get; set; }
+            public string Message { get; set; }
+            public string UnqueId { get; set; }
+            public string MessageType { get; set; }
+            public string IsRead { get; set; }
+        }
 
-      
+
         public class Result
         {
             public int Response { get; set; }
@@ -196,7 +209,7 @@ namespace PatternClinic.Utils.Repository
         {
             public string ProfilePic { get; set; }
             public string UserName { get; set; }
-
+            public string WeightUnit { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string Email { get; set; }
@@ -211,8 +224,32 @@ namespace PatternClinic.Utils.Repository
             public string ReferAs { get; set;  }
 
     }
+
+
+        public class ChatMessage
+        {
+            public string ChatSK { get; set; }
+            public string ReceiverSK { get; set; }
+            public string SenderSK { get; set; }
+            public string Message { get; set; }
+            public string IsRead { get; set; }
+            public string CreatedOn { get; set; }
+            public string AuthToken { get; set; }
+            public string ConnectionId { get; set; }
+            public string UniqueId { get; set; }
+            public string MessageType { get; set; }
+            public string IsLast { get; set; }
+        }
+
+        public class EmailRequest
+        { 
+        public string Email { get; set; }
+        public string Username { get; set; }
+        }
         public class UserMaster
         { 
+            public string WeightUnit { get; set; }
+            public string ConnectionId { get; set; }
             public string SK { get; set; }
             public string AuthToken { get; set; }
             public string UserName { get; set; }
@@ -301,16 +338,45 @@ namespace PatternClinic.Utils.Repository
             [JsonProperty(":v_PK")]
             public VPK VPK { get; set; }           
 
-            [JsonProperty(":v_email")]
-            public Email Email { get; set; }
+            [JsonProperty(":v_username")]
+            public LoginUserName UserName { get; set; }
             
         }
+
+        
+        public class ExpressionAttributeValues_GetIsLastChat
+        {
+            [JsonProperty(":v_PK")]  public VPK VPK { get; set; }
+            [JsonProperty(":v_UnqueId")] public UnqueId UnqueId { get; set; }
+            [JsonProperty(":v_IsLast")] public IsLast IsLast { get; set; }
+        }
+        public class LoginUserName
+        { 
+        public string S { get; set; }
+        }
+
+        public class ExpressionAttributeValues_GetInfoBySK
+        {
+            [JsonProperty(":v_PK")]
+            public GetVPK VPK { get; set; }
+
+            [JsonProperty(":v_SK")]
+            public VSK SK { get; set; }
+
+        }
+
+        public class GetVPK
+        { 
+        public string S { get; set; }
+        }
+
+        
 
         public class ExpressionAttributeValues_UpdateTeam
         {
             [JsonProperty(":v_DoctorId")]  public DoctorId DoctorId { get; set; }
-            [JsonProperty(":v_DoctorName")]  public DoctorName DoctorName { get; set; }
-            [JsonProperty(":v_Coach")]  public Coach Coach { get; set; }
+            [JsonProperty(":v_DoctorName")]  public UpdatedDoctorName DoctorName { get; set; }
+            [JsonProperty(":v_Coach")]  public UpdateCoach Coach { get; set; }
             [JsonProperty(":v_GSI1SK")]  public GSI1SK GSI1SK { get; set; }
             [JsonProperty(":v_CoachId")]  public CoachId CoachId { get; set; }
         }
@@ -318,6 +384,9 @@ namespace PatternClinic.Utils.Repository
         public class DoctorId  { public string S { get; set; }  }
         public class GSI1SK { public string S { get; set; } }
         public class CoachId { public string S { get; set; } }
+
+        public class UpdatedDoctorName { public string S { get; set; } }
+        public class UpdateCoach { public string S { get; set; } }
 
         #region Updated Fields
         public class UpdatedEmail
@@ -336,8 +405,64 @@ namespace PatternClinic.Utils.Repository
         {
             public string s { get; set; }
         }
+
+        public class UniqueId
+        { 
+        public string s { get; set; }
+        }
+
+        public class UnqueId
+        {
+            public string s { get; set; }
+
+        }
+        public class IsLastExpressionAttributeValues
+        {
+ 
+            [JsonProperty(":v_IsLast")] public IsLast IsLast { get; set; }
+        }
+        public class ChatExpressionAttributeValues
+        {
+            [JsonProperty(":v_ConnectionId")]
+            public ConnectionId ConnectionId { get; set; }
+        }
+
+        public class ConnectionId
+        { 
+        public string S { get; set; }
+        }
+
+        public class IsLast
+        {
+            public string S { get; set; }
+        }
+
+
+
+        public class ExpressionAttributeValuesChat
+        {
+            [JsonProperty(":v_SenderSK")]  public ChatSenderSK SenderSK { get; set; }
+
+            [JsonProperty(":v_ReceiverSK")]  public ChatReceiverSK ReceiverSK { get; set; }
+
+            [JsonProperty(":v_PK")]   public VPK VPK { get; set; }
+
+            [JsonProperty(":v_IsLast")] public IsLast IsLast { get; set; }
+        }
+
+        public class ChatReceiverSK { public string S { get; set; } }
+
+        public class ChatSenderSK { public string S { get; set; } }
+
+        public class WeightUnit
+        { 
+        public string S { get; set; }
+        }
         public class ExpressionAttributeValues
         {
+            [JsonProperty(":v_Unit")]
+            public WeightUnit WeightUnit { get; set; }
+
             [JsonProperty(":v_Height")]
             public UpdatedHeight Height { get; set; }
 
@@ -922,6 +1047,7 @@ namespace PatternClinic.Utils.Repository
         }
         public class UserInfo
         {
+            public WeightUnit weightUnit { get; set; }
             public ProfileImage profileImage { get; set; }
             public UserId UserId { get; set; }
             public ActiveStatus ActiveStatus { get; set; }
@@ -951,6 +1077,7 @@ namespace PatternClinic.Utils.Repository
             public Diastolic diastolic { get; set; }
             public Systolic systolic { get; set; }
 
+            public ConnectionId ConnectionId { get; set; }
             public ReferAs ReferAs { get; set; }
             public Country country { get; set; }
         }
@@ -959,6 +1086,99 @@ namespace PatternClinic.Utils.Repository
         {
             public string S { get; set; }
 
+        }
+
+        public class ChatListResponse
+        {
+
+            public string LastMessageType { get; set; }
+            public string SenderSK { get; set; }
+            public string RecieverSK { get; set; }
+            public string Image { get; set; }
+            public string Name { get; set; }
+            public string LastMessage { get; set; }
+            public int Count { get; set; }
+            public string TimeBefore { get; set; }
+
+            public int ChatId { get; set; }
+            public int unseenCount { get; set; }
+
+            public string UniqueNumber { get; set; }
+        }
+       
+        public class ChatRoot
+        {
+            public Message Message { get; set; }
+
+            public SK SK { get; set; }
+            public CreatedOn CreatedOn { get; set; }
+        }
+        public class Message
+        {
+            public object b { get; set; }
+            public bool @bool { get; set; }
+            public bool isBOOLSet { get; set; }
+            public List<object> bs { get; set; }
+            public List<object> l { get; set; }
+            public bool isLSet { get; set; }
+            public M m { get; set; }
+            public bool isMSet { get; set; }
+            public object n { get; set; }
+            public List<object> ns { get; set; }
+            public bool @null { get; set; }
+            public string s { get; set; }
+            public List<object> ss { get; set; }
+        }
+
+        
+        public class CreatedOn
+        {
+            public object b { get; set; }
+            public bool @bool { get; set; }
+            public bool isBOOLSet { get; set; }
+            public List<object> bs { get; set; }
+            public List<object> l { get; set; }
+            public bool isLSet { get; set; }
+            public M m { get; set; }
+            public bool isMSet { get; set; }
+            public object n { get; set; }
+            public List<object> ns { get; set; }
+            public bool @null { get; set; }
+            public string s { get; set; }
+            public List<object> ss { get; set; }
+        }
+        public class ChatList
+        {
+          
+            public string ConnectionId { get; set; }
+            public string AuthToken { get; set; }
+            public int? ChatId { get; set; }
+            public int? ReceiverId { get; set; }
+            public string SenderId { get; set; }
+            public string SentOn { get; set; }
+            public DateTime? MessageOn { get; set; }
+            public string ReceiverImage { get; set; }
+            public string SenderImage { get; set; }
+            public string Message { get; set; }
+            public string ChatType { get; set; }
+            public string TotalBill { get; set; }
+            public bool IsAdmin { get; set; }
+
+            public bool IsNotification { get; set; }
+            public bool? ToIsRead { get; set; }
+            public bool? FromIsRead { get; set; }
+        }
+        public class ResponseChatList : Result
+        {
+            public List<ChatList> chatlist { get; set; }
+            public ResponseChatList(ResponseCode responseCode = ResponseCode.OK, string errorMessage = null) : base(responseCode, errorMessage)
+            {
+
+            }
+            public ResponseChatList(Result result) : base((ResponseCode)result.Response, result.ErrorMessage)
+            {
+
+            }
         }
 
         #endregion

@@ -26,18 +26,15 @@ namespace PatternClinic.Utils.Repository
     public class CommonFunction : ICommonFunction
     {
        
-        private readonly IWebHostEnvironment _webHostEnvironment;
-       
+        private readonly IWebHostEnvironment _webHostEnvironment;       
         public string baseurl()
         {
             return "http://petjet.harishparas.com/";
         }
-
         public static string dynamodburl()
         {
             return "https://rpmcrudapis20210808220332demo.azurewebsites.net/api/";
         }
-
         public static string apidynamodburl()
         {
             return "https://appapi.apatternplus.com/api/DynamoDbAPIs/";
@@ -118,7 +115,6 @@ namespace PatternClinic.Utils.Repository
             }
             return result.ToString();
         }
-
         public static string ContentToString(HttpContent httpContent)
         {
             return httpContent == null ? "" : httpContent.ReadAsStringAsync().Result;
@@ -142,8 +138,7 @@ namespace PatternClinic.Utils.Repository
                 bytesarray[i / 2] = Convert.ToByte(hexvalue.Substring(i, 2), 16);
             }
             return encoding.GetString(bytesarray);
-        }
-                
+        }                
         public static async Task<HttpResponseMessage> GetdynamodbToken(string username, string password)
         {          
              
@@ -177,7 +172,6 @@ namespace PatternClinic.Utils.Repository
             }          
             return response;
         }
-
         public static async Task<HttpResponseMessage> GetAllPatients(string AuthToken)
         {
             using (HttpClient client = new HttpClient())
@@ -209,30 +203,27 @@ namespace PatternClinic.Utils.Repository
                 return response;
             }
         }
-
         public static async Task<HttpResponseMessage> GetPatientInfo(UserMaster req)
         {
             using (HttpClient client = new HttpClient())
             {
                 var body = new
                 {
-
                     TableName = "UserDetailsDemo",
-                    ProjectionExpression = "PK,SK,UserId,UserName,Email,ContactNo,DOB,DoctorName,CarecoordinatorName,Coach,Height,reading,diastolic,systolic,weight,BMI,FirstName,LastName,Gender,Lang,Street,City,Zip,WorkPhone,MobilePhone,ActiveStatus,Notes,ProfileImage",
+                    ProjectionExpression = "PK,SK,UserId,UserName,Email,ContactNo,DOB,DoctorName,CarecoordinatorName,Coach,Height,reading,diastolic,systolic,weight,BMI,FirstName,LastName,Gender,Lang,Street,City,Zip,WorkPhone,MobilePhone,ActiveStatus,Notes,ProfileImage,Country,Weight,ReferAs,WeightUnit",
                     KeyConditionExpression = "PK = :v_PK",
-                    FilterExpression = "Email = :v_email",
+                    FilterExpression = "UserName = :v_username",
                     ExpressionAttributeValues = new ExpressionAttributeValues_GetInfo()
                     {
                         VPK = new VPK()
                         {
                             S = "patient"
-                        },                        
-                         Email = new Email()
-                         {                            
-                               S = req.UserName 
-                         }
+                        },
+                        UserName = new LoginUserName()
+                        {                            
+                              S = req.UserName
+                        }
                     }
-
                 };
 
                 var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
@@ -245,7 +236,78 @@ namespace PatternClinic.Utils.Repository
                 return response;
             }
         }
+        public static async Task<HttpResponseMessage> GetPatientInfoBySK(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
 
+                    TableName = "UserDetailsDemo",
+                    ProjectionExpression = "PK,SK,UserId,UserName,Email,ContactNo,DOB,DoctorName,CarecoordinatorName,Coach,Height,reading,diastolic,systolic,weight,BMI,FirstName,LastName,Gender,Lang,Street,City,Zip,WorkPhone,MobilePhone,ActiveStatus,Notes,ProfileImage",
+                    KeyConditionExpression = "PK = :v_PK AND SK = :v_SK",
+         
+                    ExpressionAttributeValues = new ExpressionAttributeValues_GetInfoBySK()
+                    {
+                        VPK = new GetVPK()
+                        {
+                            S = "patient"
+                        },
+                        SK = new VSK()
+                        {
+                            S = req.SK
+                        }
+                    }                    
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "DynamoDbAPIs/getitem", content);
+
+                return response;
+            }
+        }
+
+        public static async Task<HttpResponseMessage> GetIsLastChat(ChatMessage req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+                    TableName = "UserDetailsDemo",
+                    ProjectionExpression = "SK,MessageOn,Message",
+                    KeyConditionExpression = "PK = :v_PK",
+                    FilterExpression = "UnqueId = :v_UnqueId AND IsLast =  :v_IsLast",
+                    ExpressionAttributeValues = new ExpressionAttributeValues_GetIsLastChat()
+                    {
+                        VPK = new VPK()
+                        {
+                            S = "Chat_History"
+                        },
+                        UnqueId = new UnqueId()
+                        {
+                            s = req.UniqueId
+                        },
+                        IsLast = new IsLast
+                        { 
+                            S = "true"
+                        }
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "DynamoDbAPIs/getitem", content);
+
+                return response;
+            }
+        }
         public static async Task<HttpResponseMessage> UpdatePatientInfo(UserMaster req)
         {
             using (HttpClient client = new HttpClient())
@@ -258,7 +320,7 @@ namespace PatternClinic.Utils.Repository
                         PK = new UpdatePK { s = "patient" },
                         SK = new UpdateSK { s = req.SK }
                     },
-                    UpdateExpression = "SET Height = :v_Height, Weight = :v_Weight, FirstName = :v_FirstName, LastName = :v_LastName, Country = :v_Country, Email = :v_Email, ProfileImage = :v_ProfileImage, Gender = :v_Gender, DOB = :v_DOB, ReferAs = :v_ReferAs",
+                    UpdateExpression = "SET Height = :v_Height, Weight = :v_Weight, FirstName = :v_FirstName, LastName = :v_LastName, Country = :v_Country, Email = :v_Email, ProfileImage = :v_ProfileImage, Gender = :v_Gender, DOB = :v_DOB, ReferAs = :v_ReferAs, WeightUnit = :v_Unit",
                     ExpressionAttributeValues = new ExpressionAttributeValues()
                     {                        
                         Height = new UpdatedHeight()
@@ -293,14 +355,18 @@ namespace PatternClinic.Utils.Repository
                          {
                             S = req.DOB
                          },
-                          Gender = new UpdatedGender()
-                          {
-                              S = req.Gender
-                          },
-                           ReferAs = new ReferAs()
-                           {
-                               S = req.ReferAs
-                           }
+                         Gender = new UpdatedGender()
+                         {
+                            S = req.Gender
+                         },
+                         ReferAs = new ReferAs()
+                         { 
+                            S = req.ReferAs
+                         },
+                         WeightUnit = new WeightUnit()
+                         { 
+                         S = req.WeightUnit
+                         }
                     }
                 };
 
@@ -310,12 +376,89 @@ namespace PatternClinic.Utils.Repository
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 var response = await client.PostAsync(apidynamodburl() +"updateitem", content);
+                return response;
+            }
+        }
+        public static async Task<HttpResponseMessage> UpdateEmailinPool(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new EmailRequest
+                {
+                    Email = req.Email,
+                    Username = req.UserName
+                };
+                
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");             
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync("https://appapi.apatternplus.com/api/" + "updateEmail", content);
 
                 return response;
             }
         }
+        public static async Task<HttpResponseMessage> UpdateConnectionId(UserMaster req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+                    TableName = "UserDetailsDemo",
+                    Key = new Key()
+                    {
+                        PK = new UpdatePK { s = "patient" },
+                        SK = new UpdateSK { s = req.SK }
+                    },
+                    UpdateExpression = "SET ConnectionId = :v_ConnectionId",
+                    ExpressionAttributeValues = new ChatExpressionAttributeValues()
+                    {
+                         ConnectionId = new ConnectionId()
+                        {
+                           S  = req.ConnectionId
+                        }
+                    }
+                };
 
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(apidynamodburl() + "updateitem", content);
+
+                return response;
+            }
+        }
+        public static async Task<HttpResponseMessage> UpdateIsLastChat(ChatMessage req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+                    TableName = "UserDetailsDemo",
+                    Key = new Key()
+                    {
+                        PK = new UpdatePK { s = "Chat_History" },
+                        SK = new UpdateSK { s = req.ChatSK }
+                    },
+                    UpdateExpression = "SET IsLast = :v_IsLast",
+                    ExpressionAttributeValues = new IsLastExpressionAttributeValues()
+                    {
+                        IsLast = new IsLast { S = "false" }
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(apidynamodburl() + "updateitem", content);
+
+                return response;
+            }
+        }
         public static async Task<HttpResponseMessage> UpdateTeam(UserMaster req)
         {
             using (HttpClient client = new HttpClient())
@@ -335,13 +478,13 @@ namespace PatternClinic.Utils.Repository
                         {
                            S  = req.DoctorId
                         },
-                        DoctorName = new DoctorName()
+                        DoctorName = new UpdatedDoctorName()
                         {
-                            s = req.DoctorName
+                            S = req.DoctorName
                         },
-                        Coach = new Coach()
+                        Coach = new UpdateCoach()
                         {
-                            s = req.CoachName
+                            S = req.CoachName
                         },
                         CoachId = new CoachId()
                         {
@@ -381,7 +524,6 @@ namespace PatternClinic.Utils.Repository
                 return response;
             }
         }
-
         public static async Task<HttpResponseMessage> ResetPatientPassword(ResetPasswordRequest req)
         {
             using (HttpClient client = new HttpClient())
@@ -403,7 +545,6 @@ namespace PatternClinic.Utils.Repository
                 return response;
             }
         }
-
         public static async Task<HttpResponseMessage> GetDoctorsList(UserMaster req)
         {
             using (HttpClient client = new HttpClient())
@@ -434,7 +575,6 @@ namespace PatternClinic.Utils.Repository
                 return response;
             }
         }
-
         public static async Task<HttpResponseMessage> GetCoachList(UserMaster req)
         {
             using (HttpClient client = new HttpClient())
@@ -451,6 +591,76 @@ namespace PatternClinic.Utils.Repository
                         VPK = new VPK()
                         {
                             S = "coach"
+                        }
+                    }
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", req.AuthToken);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await client.PostAsync(dynamodburl() + "DynamoDbAPIs/getitem", content);
+
+                return response;
+            }
+        }
+        public static async Task<HttpResponseMessage> AddChatMessage(ChatMessage chatmsg)
+        {
+            Random rnd = new Random();
+         
+
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new chatdata()
+                {
+                    PK = "Chat_History",
+                    CreatedOn = chatmsg.CreatedOn,
+                    SK = "ChatHistory_"+ rnd.Next(),
+                    IsRead = "false",
+                    Message = chatmsg.Message,
+                    MessageType = chatmsg.MessageType,
+                    ReceiverSK = chatmsg.ReceiverSK,
+                    SenderSK = chatmsg.SenderSK,
+                    UnqueId = chatmsg.UniqueId,
+                    IsLast = "true"
+                };
+
+                var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");             
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await client.PostAsync(dynamodburl() + "DynamoDbAPIs/putitem?jsonData="+ JsonConvert.SerializeObject(body) + "&tableName=UserDetailsDemo&actionType=register", content);
+
+                return response;
+            }
+        }
+        public static async Task<HttpResponseMessage> GetChatHistory(ChatList req)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var body = new
+                {
+
+                    TableName = "UserDetailsDemo",
+                    ProjectionExpression = "Message,CreatedOn,ReceiverSK,SenderSK,UniqueId",
+                    KeyConditionExpression = "PK = :v_PK",                   
+                    FilterExpression = "(SenderSK = :v_SenderSK OR ReceiverSK = :v_ReceiverSK)  AND IsLast = :v_IsLast",
+                    ExpressionAttributeValues = new ExpressionAttributeValuesChat()
+                    {
+                        VPK = new VPK()
+                        {
+                            S = "Chat_History"
+                        },
+                        SenderSK = new ChatSenderSK()
+                        {
+                            S = req.SenderId
+                        },
+                        ReceiverSK = new ChatReceiverSK()
+                        { 
+                             S = req.SenderId
+                        },
+                        IsLast =  new IsLast()
+                        { 
+                             S = "true"
                         }
                     }
                 };

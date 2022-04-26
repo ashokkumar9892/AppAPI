@@ -1,0 +1,89 @@
+﻿@page
+@model WebApplication3.Pages.ImagesModel
+@{
+    ViewData["Title"] = "Images";
+}
+
+<h1>Images</h1>
+<script src="~/js/microsoft/signalr/dist/browser/signalr.js"></script>
+<script type="text/javascript">
+
+
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:51160/chatHub").build();
+
+
+</script><legend style="padding-top: 10px; padding-bottom: 10px;">Upload Images</legend>
+<form method="POST" enctype="multipart/form-data" id="myform">
+    <input type="text" name="title" /><br /><br />
+    <input type="file" name="files" /><br /><br />
+    <input type="submit" value="Submit" id="btnSubmit" />
+</form>
+
+<script>
+    connection.start().then(function () {
+
+
+        connection.on("ReceiveImageMessage", function (user) {
+            var li = document.createElement("li");
+            document.getElementById("messagesList").appendChild(li);
+            li.textContent = `${user}`;
+        });
+
+        $(document).ready(function () {
+            $("#btnSubmit").click(function (event) {
+
+                //stop submit the form, we will post it manually.
+                event.preventDefault();
+
+                // Get form
+                var form = $('#fileUploadForm')[0];
+
+                // Create an FormData object
+                var files = new FormData(form);
+                
+                // disabled the submit button
+                $("#btnSubmit").prop("disabled", true);
+
+                connection.invoke("UploadFiles", files).catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+                //$.ajax({
+                //    //type: "POST",
+                //    enctype: 'multipart/form-data',
+                //    url: "http://localhost:51160/chatHub/UploadFiles",
+                //    data: data,
+                //    processData: false,
+                //    contentType: false,
+                //    cache: false,
+                //    timeout: 800000,
+                //    success: function (data) {
+
+                //        $("#output").text(data);
+                //        console.log("SUCCESS : ", data);
+                //        $("#btnSubmit").prop("disabled", false);
+
+                //    },
+                //    error: function (e) {
+
+                //        $("#output").text(e.responseText);
+                //        console.log("ERROR : ", e);
+                //        $("#btnSubmit").prop("disabled", false);
+
+                //    }
+                //});
+
+            });
+
+        });
+
+    });
+
+
+
+
+
+
+</script>
+
